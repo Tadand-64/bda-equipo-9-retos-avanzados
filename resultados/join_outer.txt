@@ -1,0 +1,6 @@
+101	[Ana,Mouse]
+101	[Ana,Laptop]
+102	[Luis,]
+103	[Marta,Teclado]
+104	[Pedro,]
+105	[,Monitor]

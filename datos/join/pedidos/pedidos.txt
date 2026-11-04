@@ -1,0 +1,4 @@
+101	Laptop
+101	Mouse
+103	Teclado
+105	Monitor

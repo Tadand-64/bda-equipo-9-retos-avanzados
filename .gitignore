@@ -1,0 +1,3 @@
+# Ignorar el jar de HSQLDB si se copia desde /tmp/equipo9
+datos/hsqldb.jar
+*.jar
