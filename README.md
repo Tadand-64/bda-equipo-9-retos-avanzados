@@ -6,7 +6,7 @@ Guía para ejecutar `secondarysort`, `join` y `dbcount` (bonus) en Hadoop 3.3.6 
 
 - *Ayala Carrazco Said Giulliano*
 - *Carmona Capula Andrés Tadeo*
-- *Hernandez Huerta Ari Leonardp*
+- *Hernandez Huerta Ari Leonardo*
 
 ## Descripción y caso de uso
 
@@ -56,6 +56,8 @@ docker ps -a
 ```bash
 docker exec -it -u hadoop hadoop bash
 ```
+
+Si sale `container ... is not running`, tu contenedor está apagado. Usa la [Ruta C](#ruta-c-volver-a-activar-la-práctica).
 
 Si estás dentro con el prompt `root@...`, cambia de usuario:
 
@@ -137,6 +139,22 @@ docker start hadoop
 
 ```bash
 docker exec -it -u hadoop hadoop bash
+```
+
+Tu prompt debe cambiar a algo como `hadoop@...`.
+
+Si vuelve a salir `container ... is not running`, el contenedor se está apagando solo. Revisa su estado y sus mensajes:
+
+💻
+
+```bash
+docker ps -a
+```
+
+💻
+
+```bash
+docker logs hadoop
 ```
 
 Continúa en el [paso 2](#2-verifica-el-entorno).
@@ -389,14 +407,23 @@ hadoop jar $EX dbcount -libjars $HSQL
 
 ### Resultado esperado
 
-No se genera un archivo `part-r-00000`, porque el resultado se guarda en la tabla `Pageview`. En el log, `totalPageview` y `sumPageview` deben tener el mismo valor:
+No se genera un archivo `part-r-00000`, porque el resultado se guarda en la tabla `Pageview`. El log es largo, así que puedes ejecutar el ejemplo mostrando solo las líneas clave:
 
-```text
-totalPageview=73
-sumPageview=73
+🐳
+
+```bash
+hadoop jar $EX dbcount -libjars $HSQL 2>&1 | grep -E "completed successfully|totalPageview|sumPageview"
 ```
 
-El número cambia en cada ejecución porque los datos son aleatorios.
+Ejemplo de una ejecución real:
+
+```text
+INFO mapreduce.Job: Job job_local1334266441_0001 completed successfully
+INFO examples.DBCountPageView: totalPageview=50
+INFO examples.DBCountPageView: sumPageview=50
+```
+
+El número cambia en cada ejecución (entre 50 y 99) porque los datos son aleatorios, pero ambos valores deben coincidir.
 
 ### Cómo funciona
 
@@ -443,7 +470,7 @@ docker cp hadoop:/tmp/salida_join/part-r-00000 resultados/join_inner.txt
 docker cp hadoop:/tmp/salida_join_outer/part-r-00000 resultados/join_outer.txt
 ```
 
-Si ejecutaste `dbcount`, `datos/` también puede recibir archivos de HSQLDB o `hsqldb.jar`. No los subas a GitHub.
+Si descargaste `hsqldb.jar` en `/tmp/equipo9`, también se copiará a `datos/`. No lo subas a GitHub. La base de datos de `dbcount` se guarda en `/tmp/URLAccess`, así que este comando no la copia.
 
 ---
 
@@ -470,7 +497,7 @@ Para volver, sigue la [Ruta C](#ruta-c-volver-a-activar-la-práctica).
 | Error | Causa | Solución |
 |---|---|---|
 | `The container name "/hadoop" is already in use` | Ya tienes el contenedor | No crees otro ni lo borres; usa la Ruta A o C |
-| `Container ... is not running` | El contenedor está apagado | Ejecuta `docker start hadoop` |
+| `container ... is not running` | El contenedor está apagado; pasa al cerrar Docker Desktop o apagar la computadora | Ejecuta `docker start hadoop` y vuelve a entrar con `docker exec -it -u hadoop hadoop bash`; tus archivos se conservan |
 | `docker: command not found` | Estás dentro del contenedor | Abre una terminal en tu computadora |
 | `hadoop: command not found` | No estás como `hadoop` o faltan las variables | Ejecuta `su - hadoop` o revisa `~/.bashrc` |
 | `Not a valid JAR` o un error por argumentos | `EX` está vacía en una terminal nueva | Vuelve a definir `EX` (paso 2) |
@@ -480,3 +507,5 @@ Para volver, sigue la [Ruta C](#ruta-c-volver-a-activar-la-práctica).
 | `not a SequenceFile` en `join` | Falta `-inFormat` | Copia el comando completo |
 | El `join` sale incompleto o desordenado | Las llaves no están ordenadas como texto | Ordena los archivos y usa llaves del mismo ancho: `10` queda antes de `9` |
 | `ClassNotFoundException` o `No suitable driver` en `dbcount` | Falta el jar de HSQLDB | Revisa `$HSQL` y `HADOOP_CLASSPATH` |
+| `Failed to create symlink ... libjars/*` en `dbcount` | Aviso de Hadoop en modo local | Si el trabajo termina con `completed successfully` y los totales coinciden, puedes ignorarlo |
+| `Output Path is null` en `dbcount` | El resultado va a una tabla, no a una carpeta | Es normal; puedes ignorarlo |
